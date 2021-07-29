@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Backup terraform.state to s3
+Parameters:
+  SourceBucketName:
+    Description: Enter Source bucket name which stores terraform state
+    Type: String
+  DestinationBucketName:
+    Description: Enter Destination bucket name which stores backup
+    Type: String
+  Region:
+    Description: Enter AWS Region
+    Type: String
+    Default: us-east-1
+  DynamodbTableName:
+    Description: Enter DynamoDb Table Name which locks terraform state
+    Type: String
+    Default: terraform_state
+  SourceGihubRepoUrl:
+    Description: Enter Github Repo url that contains build script and build files
+    Type: String
+    Default: https://github.com/anandshivam44/build
+Resources:
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+  CodeBuildServicePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: CodeBuildServicePolicy
+      Roles:
+        - !Ref CodeBuildServiceRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: "arn:aws:logs:*:*:*"
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:GetObjectVersion
+              - s3:PutObject
+            Resource:
+              - !Sub "arn:aws:s3:::${DestinationBucketName}"
+  TerraformStateBackup:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: TerraformStateBackup
+      Description: Backup terraform.state to s3
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Artifacts:
+        Type: no_artifacts
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:4.0
+        EnvironmentVariables:
+          - Name: SOURCE_BUCKET_NAME
+            Value: !Ref SourceBucketName
+          - Name: TARGET_BUCKET_NAME
+            Value: !Ref DestinationBucketName
+          - Name: REGION
+            Value: !Ref Region
+          - Name: STATE_LOCK_TABLE_NAME
+            Value: !Ref DynamodbTableName
+      Source:
+        Location: !Ref SourceGihubRepoUrl
+        Type: GITHUB
+      TimeoutInMinutes: 10
