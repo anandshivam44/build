@@ -1,8 +1,17 @@
 Terraform state backup
 
-Run the Template
+Create Stack
 ```
-aws cloudformation deploy --template-file cnf-codebuild.yaml --stack-name <STACK_NAME> --debug
+aws cloudformation create-stack  --stack-name test-stack-name-2  \
+--template-body file://cnf-codebuild.yaml \
+--capabilities CAPABILITY_NAMED_IAM \
+--parameters  \
+ParameterKey=DynamodbTableName,ParameterValue=terraform_state \
+ParameterKey=Region,ParameterValue=us-east-1 \
+ParameterKey=SourceGihubRepoUrl,ParameterValue=https://github.com/anandshivam44/build \
+ParameterKey=SourceBucketName,ParameterValue=shivam-terraform-state-backend-1212121 \
+ParameterKey=DestinationBucketName,ParameterValue=recovery-bucket-89898989
+
 ```
 
 Required Environment Variables
