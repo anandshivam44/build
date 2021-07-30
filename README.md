@@ -38,4 +38,4 @@ ParameterKey=DestinationBucketName,ParameterValue=recovery-bucket-89898989
  - `cnf-codebuil.yaml` is cloudformatoion template
  - `buildspec.yaml` contains build information for codebuild
  - `backup.sh` contains shell coammands to will runn inside codebuild container
- - `read_table_dynamodb.py` this file is invoked by `backup.sh`. This python script waits untill there is no state lock and only then backup will start.
+ - `read_state.py` this file is invoked by `backup.sh`. This python script waits untill there is no state lock and only then backup will start.
