@@ -2,9 +2,10 @@ import boto3
 import json
 import os
 
-tables = os.environ["STATE_LOCK_TABLE_NAME"].split(",")
-# tables = "restore-table,terraform_state".split(",")
-REGION = os.environ["REGION"]
+# tables = os.environ["STATE_LOCK_TABLE_NAME"].split(",")
+tables = "restore-table,terraform_state".split(",")
+# REGION = os.environ["REGION"]
+REGION = os.getenv("REGION", "us-east-1")
 # REGION = "us-east-1"
 
 for table in tables:

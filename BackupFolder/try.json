@@ -1,0 +1,131 @@
+{
+    "YourTableName": [
+        {   
+            "PutRequest": {
+                "Items": [
+                    {
+                        "city": "New Alfhaven",
+                        "zipcode": "39469",
+                        "lastName": "Armstrong",
+                        "lng": "3.8211",
+                        "ID": "c8093a92-b39a-4505-af90-108a789bc9a5",
+                        "lat": "36.4201",
+                        "phone": "874-392-3741 x148",
+                        "firstName": "Jennings",
+                        "street": "04584 Zieme Falls",
+                        "state": "Indiana"
+                    },
+                    {
+                        "city": "New Brendabury",
+                        "zipcode": "93600",
+                        "lastName": "Rowe",
+                        "lng": "-153.7818",
+                        "ID": "1217e61f-4214-4c87-9b79-dd2d3a482ee4",
+                        "lat": "-82.1907",
+                        "phone": "880.333.1607 x6995",
+                        "firstName": "Kiana",
+                        "street": "19556 Grimes Prairie",
+                        "state": "Illinois"
+                    },
+                    {
+                        "city": "East Donavonhaven",
+                        "zipcode": "21291-5371",
+                        "lastName": "Quitzon",
+                        "lng": "139.4942",
+                        "ID": "40b1b999-3e50-4f71-b634-daf289a03331",
+                        "lat": "7.1610",
+                        "phone": "743-401-4513",
+                        "firstName": "Talon",
+                        "street": "0545 Beatty Loop",
+                        "state": "Washington"
+                    },
+                    {
+                        "city": "Franeckiview",
+                        "zipcode": "79033-8157",
+                        "lastName": "Hyatt",
+                        "lng": "28.7886",
+                        "ID": "1e97164f-ef6b-4f5d-8bae-324c58adea25",
+                        "lat": "49.8929",
+                        "phone": "1-011-149-8706 x742",
+                        "firstName": "Madelynn",
+                        "street": "339 Kessler Knoll",
+                        "state": "North Carolina"
+                    },
+                    {
+                        "city": "East Eldridgefurt",
+                        "zipcode": "65800",
+                        "lastName": "Hackett",
+                        "lng": "-171.0996",
+                        "ID": "57102bfc-705f-444f-9942-4dca331ee9eb",
+                        "lat": "-83.0348",
+                        "phone": "804-350-7889 x1238",
+                        "firstName": "Corene",
+                        "street": "64323 Camron Mountains",
+                        "state": "Georgia"
+                    },
+                    {
+                        "city": "Port Virgil",
+                        "zipcode": "30897",
+                        "lastName": "Paucek",
+                        "lng": "165.0786",
+                        "ID": "d74e5cac-8f82-452b-869c-ea811c49cefa",
+                        "lat": "9.4948",
+                        "phone": "1-650-656-5718 x9006",
+                        "firstName": "Laury",
+                        "street": "29424 Karley Viaduct",
+                        "state": "South Carolina"
+                    },
+                    {
+                        "city": "North Rowanshire",
+                        "zipcode": "02750-9434",
+                        "lastName": "Bernier",
+                        "lng": "-110.6095",
+                        "ID": "4a87b985-916d-43ce-a052-789b6ef6f474",
+                        "lat": "67.4889",
+                        "phone": "1-982-924-2120 x8892",
+                        "firstName": "Winifred",
+                        "street": "56937 Lesley Ramp",
+                        "state": "Idaho"
+                    },
+                    {
+                        "city": "Lake Brandon",
+                        "zipcode": "04174",
+                        "lastName": "Purdy",
+                        "lng": "108.5656",
+                        "ID": "268dbe28-43e7-418a-94d1-b435c106c852",
+                        "lat": "-60.2372",
+                        "phone": "456.109.1324 x87421",
+                        "firstName": "Allen",
+                        "street": "221 Muller Knoll",
+                        "state": "Kentucky"
+                    },
+                    {
+                        "city": "Port Meghanmouth",
+                        "zipcode": "00859-8631",
+                        "lastName": "Mayer",
+                        "lng": "-15.2611",
+                        "ID": "ced6949e-80f3-4881-8ead-fd493e179609",
+                        "lat": "-69.5835",
+                        "phone": "925-657-1169",
+                        "firstName": "Mathias",
+                        "street": "39651 Hans Alley",
+                        "state": "Missouri"
+                    },
+                    {
+                        "city": "Sophiaside",
+                        "zipcode": "96260-6866",
+                        "lastName": "Jerde",
+                        "lng": "-51.2921",
+                        "ID": "7835735c-c5bf-4503-b865-73fdc37b8a7f",
+                        "lat": "21.2183",
+                        "phone": "393-430-0708",
+                        "firstName": "Quincy",
+                        "street": "3362 Lockman Ridge",
+                        "state": "Idaho"
+                    }
+                ]
+                
+            }
+        }
+    ]
+}
