@@ -54,6 +54,7 @@ Resources:
               - s3:PutObject
             Resource:
               - !Sub "arn:aws:s3:::${DestinationBucketName}"
+
   TerraformStateBackup:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -79,3 +80,43 @@ Resources:
         Location: !Ref SourceGihubRepoUrl
         Type: GITHUB
       TimeoutInMinutes: 10
+  TriggerBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /
+      Policies:
+        - PolicyName: lambda-copier
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - codebuild:StartBuild
+                Resource:
+                  - "arn:aws:codebuild:us-east-1:507799322916:project/TerraformStateBackup"
+  CopyZipsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Start starts build for a code build project
+      Handler: index.handler
+      Runtime: python3.7
+      Role: !GetAtt "TriggerBuildRole.Arn"
+      Timeout: 240
+      Code:
+        ZipFile: |
+          import boto3
+
+          def handler(event, context):
+
+              client = boto3.client("codebuild")
+              response = client.start_build(projectName="TerraformStateBackup")
+    
