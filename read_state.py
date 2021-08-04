@@ -27,4 +27,4 @@ while terraform_state_lock == True: # as long as 'apply command is running' whil
         terraform_state_lock = 'Info' in state
 
 else: # release this while loop when there is no state lock/ no 
-    print("Start")
+    print("StartBackup")
