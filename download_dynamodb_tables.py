@@ -1,12 +1,13 @@
 import boto3
 import json
 import os
+tables=[]
+for i in range(10): #BACKUP_TABLE_NAME_1
+    TABLE_NAME="BACKUP_TABLE_NAME_"+str(i)
+    if os.environ[TABLE_NAME]!='NULL':
+        tables.append(os.environ[TABLE_NAME])
 
-# tables = os.environ["STATE_LOCK_TABLE_NAME"].split(",")
-tables = "restore-table,terraform_state".split(",")
-# REGION = os.environ["REGION"]
 REGION = os.getenv("REGION", "us-east-1")
-# REGION = "us-east-1"
 
 for table in tables:
     file_name = "./BackupFolder/" + table + ".json"

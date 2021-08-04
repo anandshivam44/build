@@ -2,25 +2,38 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: Backup terraform.state to s3
 Parameters:
   SourceBucketName:
-    Description: Enter Source bucket name which stores terraform state
+    Description: Enter Source bucket name which stores terraform state file
     Type: String
   DestinationBucketName:
     Description: Enter Destination bucket name which stores backup
+    Type: String
+  LambdaCodeBucketName:
+    Description: Enter Bucket name which contains python as zip file
+    Type: String
+  LambdaZipFileName:
+    Description: Enter Zip file name which contains lambda function inside bucket 'LambdaCodeBucketName'
+    Type: String
+  AccountID:
+    Description: Enter Account ID from which dynamodb has to backup
     Type: String
   Region:
     Description: Enter AWS Region
     Type: String
     Default: us-east-1
-  DynamodbTableName:
+  TerraformStateTableName:
     Description: Enter DynamoDb Table Name which locks terraform state
     Type: String
     Default: terraform_state
+  BackupTableName: 
+    Description: "Enter Dynamodb Table Name that you want to BackUp, Comma-delimited list"
+    Type: CommaDelimitedList
+    Default: "NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL"
   SourceGihubRepoUrl:
     Description: Enter Github Repo url that contains build script and build files
     Type: String
     Default: https://github.com/anandshivam44/build
 Resources:
-  CodeBuildServiceRole:
+  TerraformStateDynamodbBackupRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -32,12 +45,12 @@ Resources:
             Principal:
               Service:
                 - codebuild.amazonaws.com
-  CodeBuildServicePolicy:
+  TerraformStateDynamodbBackupPolicy: # proper names #STS Assume role
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: CodeBuildServicePolicy
+      PolicyName: TerraformStateDynamodbBackupPolicy
       Roles:
-        - !Ref CodeBuildServiceRole
+        - !Ref TerraformStateDynamodbBackupRole   
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -54,13 +67,45 @@ Resources:
               - s3:PutObject
             Resource:
               - !Sub "arn:aws:s3:::${DestinationBucketName}"
-
+          - Effect: Allow
+            Action:
+              - dynamodb:ListTables
+              - dynamodb:DescribeContributorInsights
+              - dynamodb:ListTagsOfResource
+              - dynamodb:DescribeReservedCapacityOfferings
+              - dynamodb:PartiQLSelect
+              - dynamodb:DescribeTable
+              - dynamodb:GetItem
+              - dynamodb:DescribeContinuousBackups
+              - dynamodb:DescribeExport
+              - dynamodb:DescribeKinesisStreamingDestination
+              - dynamodb:ListExports
+              - dynamodb:DescribeLimits
+              - dynamodb:BatchGetItem
+              - dynamodb:ConditionCheckItem
+              - dynamodb:ListBackups
+              - dynamodb:Scan
+              - dynamodb:Query
+              - dynamodb:DescribeStream
+              - dynamodb:DescribeTimeToLive
+              - dynamodb:ListStreams
+              - dynamodb:ListContributorInsights
+              - dynamodb:DescribeGlobalTableSettings
+              - dynamodb:ListGlobalTables
+              - dynamodb:GetShardIterator
+              - dynamodb:DescribeGlobalTable
+              - dynamodb:DescribeReservedCapacity
+              - dynamodb:DescribeBackup
+              - dynamodb:GetRecords
+              - dynamodb:DescribeTableReplicaAutoScaling
+            Resource:
+              - !Sub arn:aws:dynamodb:${Region}:${AccountID}:table/*
   TerraformStateBackup:
     Type: AWS::CodeBuild::Project
     Properties:
       Name: TerraformStateBackup
       Description: Backup terraform.state to s3
-      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      ServiceRole: !GetAtt TerraformStateDynamodbBackupRole.Arn
       Artifacts:
         Type: no_artifacts
       Environment:
@@ -75,11 +120,31 @@ Resources:
           - Name: REGION
             Value: !Ref Region
           - Name: STATE_LOCK_TABLE_NAME
-            Value: !Ref DynamodbTableName
+            Value: !Ref TerraformStateTableName
+          - Name: BACKUP_TABLE_NAME_0
+            Value: !Select [ 0, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_1
+            Value: !Select [ 1, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_2
+            Value: !Select [ 2, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_3
+            Value: !Select [ 3, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_4
+            Value: !Select [ 4, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_5
+            Value: !Select [ 5, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_6
+            Value: !Select [ 6, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_7
+            Value: !Select [ 7, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_8
+            Value: !Select [ 8, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_9
+            Value: !Select [ 9, !Ref BackupTableName ]
       Source:
         Location: !Ref SourceGihubRepoUrl
         Type: GITHUB
-      TimeoutInMinutes: 10
+      TimeoutInMinutes: 15
   TriggerBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -102,7 +167,7 @@ Resources:
                 Action:
                   - codebuild:StartBuild
                 Resource:
-                  - "arn:aws:codebuild:us-east-1:507799322916:project/TerraformStateBackup"
+                  - !GetAtt "TerraformStateBackup.Arn"
   CopyZipsFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -110,13 +175,12 @@ Resources:
       Handler: index.handler
       Runtime: python3.7
       Role: !GetAtt "TriggerBuildRole.Arn"
-      Timeout: 240
+      Timeout: 20
+      MemorySize: 128
       Code:
-        ZipFile: |
-          import boto3
-
-          def handler(event, context):
-
-              client = boto3.client("codebuild")
-              response = client.start_build(projectName="TerraformStateBackup")
+        S3Bucket: !Ref LambdaCodeBucketName
+        S3Key: !Ref LambdaZipFileName
+      Environment:
+        Variables:
+          PROJECT_NAME: !Ref "TerraformStateBackup"
     
