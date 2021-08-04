@@ -1,5 +1,5 @@
 FUNCTION_BUCKET_NAME=function-bucket-name-575859
-aws s3 mb s3://$FUNCTION_BUCKET_NAME
+# aws s3 mb s3://$FUNCTION_BUCKET_NAME
 FUNCTION_FILE_NAME=LambdaFunction.zip
 
 pip3 install --target ./package requests

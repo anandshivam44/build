@@ -69,6 +69,12 @@ Resources:
               - !Sub "arn:aws:s3:::${DestinationBucketName}"
           - Effect: Allow
             Action:
+              - s3:GetObject
+              - s3:GetObjectVersion
+            Resource:
+              - !Sub "arn:aws:s3:::${SourceBucketName}"
+          - Effect: Allow
+            Action:
               - dynamodb:ListTables
               - dynamodb:DescribeContributorInsights
               - dynamodb:ListTagsOfResource
