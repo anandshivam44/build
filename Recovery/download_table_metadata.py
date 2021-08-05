@@ -26,5 +26,5 @@ del source_table_meta_data["Table"]["ItemCount"]
 del source_table_meta_data["Table"]["TableStatus"]
 del source_table_meta_data["Table"]["ProvisionedThroughput"]["NumberOfDecreasesToday"]
 
-json_object = json.dumps(source_table_meta_data["Table"], indent=4)
+json_object = json.dumps(source_table_meta_data["Table"], indent=4, cls=DecimalEncoder)
 print(json_object)
