@@ -11,6 +11,7 @@ tables = []
 for i in range(10):  # BACKUP_TABLE_NAME_1
     TABLE_NAME = "BACKUP_TABLE_NAME_" + str(i)
     if os.environ[TABLE_NAME] != "NULL":
+        print("Backing up TABLE_NAME=", os.environ[TABLE_NAME])
         tables.append(os.environ[TABLE_NAME])
 # tables.append("Movies")
 
