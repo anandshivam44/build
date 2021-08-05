@@ -14,12 +14,23 @@ for i in range(10):  # BACKUP_TABLE_NAME_1
 
 REGION = os.getenv("REGION", "us-east-1")
 
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            # wanted a simple yield str(o) in the next line,
+            # but that would mean a yield on the line with super(...),
+            # which wouldn't work (see my comment below), so...
+            return (str(o) for o in [o])
+        return super(DecimalEncoder, self).default(o)
+
+
 for table in tables:
     file_name = "./BackupFolder/" + table + ".json"
     file = open(file_name, "w+")
     dynamodb = boto3.resource("dynamodb", region_name=REGION)
     table = dynamodb.Table(table)
     response = table.scan()  # Download Dynamodb Table Contents
-    json_object = json.dumps(response["Items"], indent=4,cls=DecimalEncoder)
+    json_object = json.dumps(response["Items"], indent=4, cls=DecimalEncoder)
     file.write(json_object)
     file.close()
