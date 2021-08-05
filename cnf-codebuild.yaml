@@ -183,8 +183,26 @@ Resources:
             Value: !Ref Region
           - Name: STATE_LOCK_TABLE_NAME
             Value: !Ref TerraformStateTableName
-          - Name: BACKUP_TABLE_NAME
-            Value: !Ref BackupTableName
+          - Name: BACKUP_TABLE_NAME_0
+            Value: !Select [ 0, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_1
+            Value: !Select [ 1, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_2
+            Value: !Select [ 2, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_3
+            Value: !Select [ 3, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_4
+            Value: !Select [ 4, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_5
+            Value: !Select [ 5, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_6
+            Value: !Select [ 6, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_7
+            Value: !Select [ 7, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_8
+            Value: !Select [ 8, !Ref BackupTableName ]
+          - Name: BACKUP_TABLE_NAME_9
+            Value: !Select [ 9, !Ref BackupTableName ]
       Source:
         Location: !Ref SourceGihubRepoUrl
         Type: GITHUB
