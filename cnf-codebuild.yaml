@@ -230,8 +230,9 @@ Resources:
                   - codebuild:StartBuild
                 Resource:
                   - !GetAtt "TerraformStateBackup.Arn"
-  CopyZipsFunction:
+  LambdaTriggerStartsBuild:
     Type: AWS::Lambda::Function
+    FunctionName: LambdaTriggerStartsBuild
     Properties:
       Description: Start starts build for a code build project
       Handler: index.handler
@@ -245,4 +246,26 @@ Resources:
       Environment:
         Variables:
           PROJECT_NAME: !Ref "TerraformStateBackup"
-    
+  ScheduledRule: 
+  Type: AWS::Events::Rule
+  Properties: 
+    Description: "ScheduledRule"
+    ScheduleExpression: "rate(1 minutes)"
+    State: "ENABLED"
+    Targets: 
+      - 
+        Arn: 
+          Fn::GetAtt: 
+            - "LambdaTriggerStartsBuild"
+            - "Arn"
+        Id: "LambdaTriggerStartsBuild"
+PermissionForEventsToInvokeLambda: 
+  Type: AWS::Lambda::Permission
+  Properties: 
+    FunctionName: !Ref LambdaTriggerStartsBuild
+    Action: "lambda:InvokeFunction"
+    Principal: "events.amazonaws.com"
+    SourceArn: 
+      Fn::GetAtt: 
+        - "ScheduledRule"
+        - "Arn"
