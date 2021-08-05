@@ -1,14 +1,15 @@
 import boto3
 import json
 import os
-tables=[]
+
+tables = []
 
 # print("Table Name", os.environ["BACKUP_TABLE_NAME"])
 # print(type(os.environ["BACKUP_TABLE_NAME"]))
 
-for i in range(10): #BACKUP_TABLE_NAME_1
-    TABLE_NAME="BACKUP_TABLE_NAME_"+str(i)
-    if os.environ[TABLE_NAME]!='NULL':
+for i in range(10):  # BACKUP_TABLE_NAME_1
+    TABLE_NAME = "BACKUP_TABLE_NAME_" + str(i)
+    if os.environ[TABLE_NAME] != "NULL":
         tables.append(os.environ[TABLE_NAME])
 
 REGION = os.getenv("REGION", "us-east-1")
