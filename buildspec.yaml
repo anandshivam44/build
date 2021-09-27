@@ -4,7 +4,7 @@ phases:
     commands:
       - python3 read_state.py
       - echo "Start DynamoDB Backup"
-      - python3 download_dynamodb_tables.py
+      - python3 backup_dynamodb_tables.py
       - echo "DynamoDB Backup Completed"
       - # get current epoch time [6 digits]
       - TIME_NOW=$(date +%s)

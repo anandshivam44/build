@@ -29,7 +29,7 @@ for table in tables:
     file = open(file_name, "w+")
     dynamodb = boto3.resource("dynamodb", region_name=REGION)
     table = dynamodb.Table(table)
-    response = table.scan()  # Download Dynamodb Table Contents
+    response = table.scan()  # Backup Dynamodb Table Contents
     json_object = json.dumps(response["Items"], indent=4, default=default)
     file.write(json_object)
     file.close()
