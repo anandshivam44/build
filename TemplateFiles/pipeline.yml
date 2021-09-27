@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Create codepipeline
+Parameters:
+  Environment:
+    Type: String
+    Description: Branch name
+  ArtifactBucket:
+    Description: Location where Build Artifact will Store
+    Type: String  
+  CodeBuildConf:
+    Description: CodeBuild Configuration
+    Type: String
+    
+Resources:        
+  Pipeline:
+    DependsOn: PipelineRole
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore:
+        Location: 
+          Ref: ArtifactBucket
+        Type: S3
+      Name: !Sub ${AWS::StackName}-${Environment}-Pipeline
+      RoleArn: !GetAtt [PipelineRole, Arn]
+      Stages:        
+        - Name: GitHubSource
+          Actions:
+            - Name: SourceCode
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: 1
+              Configuration:
+                Owner: "anandshivam44"                
+                Repo: "build"
+                Branch: "master"
+                PollForSourceChanges: false
+                OAuthToken: "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"
+              OutputArtifacts:
+              - Name: SourceCodeApp
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: Backup-Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: 
+                  Ref: CodeBuildConf
+              InputArtifacts:
+                - Name: SourceCodeApp
+              OutputArtifacts:
+                - Name: SourceCodeBuild
+              RunOrder: 1
+              
+  PipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [codepipeline.amazonaws.com]
+        Version: "2012-10-17"
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: '*'
+                Resource: '*'
+
+Outputs:
+  PipelineURL:
+    Description: CodePipeline URL
+    Value:
+      Fn::Join:
+        - ""
+        - - "https://console.aws.amazon.com/codepipeline/home?region="
+          - Ref: AWS::Region
+          - "#/view/"
+          - Ref: Pipeline

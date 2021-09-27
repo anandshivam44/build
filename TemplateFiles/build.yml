@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Create codebuild
+Parameters:
+  SourceBucketName:    
+    Type: String
+  DestinationBucketName:    
+    Type: String  
+  DestinationAccountID:    
+    Type: String  
+  TerraformStateTableName:    
+    Type: String    
+  BackupTableName:    
+    Type: CommaDelimitedList    
+  #SourceGihubRepoUrl:    
+  #  Type: String 
+  Environment:
+    Type: String      
+
+Resources:
+  # TerraformStateDynamodbBackupRole:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     AssumeRolePolicyDocument:
+  #       Version: 2012-10-17
+  #       Statement:
+  #         - Effect: Allow
+  #           Action:
+  #             - sts:AssumeRole
+  #           Principal:
+  #             Service:
+  #               - codebuild.amazonaws.com
+  # TerraformStateDynamodbBackupPolicy: # proper names #STS Assume role
+  #   Type: AWS::IAM::Policy
+  #   Properties:
+  #     PolicyName: TerraformStateDynamodbBackupPolicy
+  #     Roles:
+  #       - !Ref TerraformStateDynamodbBackupRole
+  #     PolicyDocument:
+  #       Version: 2012-10-17
+  #       Statement:
+  #         - Effect: Allow
+  #           Action:
+  #             - logs:CreateLogGroup
+  #             - logs:CreateLogStream
+  #             - logs:PutLogEvents
+  #           Resource: "arn:aws:logs:*:*:*"
+  #         - Effect: Allow
+  #           Action:
+  #             - s3:*
+  #           Resource:
+  #             - !Sub "arn:aws:s3:::${DestinationBucketName}/*"
+  #             - !Sub "arn:aws:s3:::${DestinationBucketName}"
+  #         - Effect: Allow
+  #           Action:
+  #             - s3:*
+  #           Resource:
+  #             - !Sub "arn:aws:s3:::${SourceBucketName}/*"
+  #             - !Sub "arn:aws:s3:::${SourceBucketName}"
+  #         - Effect: Allow
+  #           Action:
+  #             - dynamodb:*
+  #           Resource:
+  #             - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*
+
+  BackupPipelineBuild:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-${Environment}-Build
+      Description: Backup terraform.state to s3
+      ServiceRole: !Sub arn:aws:iam::${AWS::AccountId}:role/gocd-agent-deploy-role
+      Artifacts:
+        Type: CODEPIPELINE
+        OverrideArtifactName: True
+      Source:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:4.0
+        EnvironmentVariables:          
+          - Name: SOURCE_BUCKET_NAME
+            Value: !Ref SourceBucketName
+          - Name: TARGET_BUCKET_NAME
+            Value: !Ref DestinationBucketName
+          - Name: REGION
+            Value: !Ref AWS::Region
+          - Name: STATE_LOCK_TABLE_NAME
+            Value: !Ref TerraformStateTableName
+          - Name: BACKUP_TABLE_NAME_0
+            Value: !Select [0, !Ref BackupTableName]
+          - Name: BACKUP_TABLE_NAME_1
+            Value: !Select [1, !Ref BackupTableName]
+          - Name: BACKUP_TABLE_NAME_2
+            Value: !Select [2, !Ref BackupTableName]
+          - Name: BACKUP_TABLE_NAME_3
+            Value: !Select [3, !Ref BackupTableName]
+          - Name: BACKUP_TABLE_NAME_4
+            Value: !Select [4, !Ref BackupTableName]      
+      TimeoutInMinutes: 15  
+Outputs:
+  BackupPipelineBuild:
+    Description: BackupPipelineBuild
+    Value: 
+      Ref: BackupPipelineBuild
+  BackupPipelineBuildURL:
+    Description: BackupPipelineBuild URL
+    Value: 
+      Fn::Join:
+        - ""
+        - - "https://console.aws.amazon.com/codebuild/home?region="
+          - Ref: AWS::Region
+          - "#/projects/"
+          - Ref: BackupPipelineBuild
+          - "/view"  
+    

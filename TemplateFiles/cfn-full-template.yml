@@ -1,0 +1,159 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Backup terraform.state to s3
+Parameters:
+  SourceBucketName:
+    Description: Enter Source bucket name which stores terraform state file
+    Type: String
+  DestinationBucketName:
+    Description: Enter Destination bucket name which stores backup
+    Type: String
+  LambdaCodeBucketName:
+    Description: Enter Bucket name which contains python as zip file
+    Type: String
+  LambdaZipFileName:
+    Description: Enter Zip file name which contains lambda function inside bucket 'LambdaCodeBucketName'
+    Type: String
+  DestinationAccountID:
+    Description: Enter Account ID from which dynamodb has to backup
+    Type: String  
+  TerraformStateTableName:
+    Description: Enter DynamoDb Table Name which locks terraform state
+    Type: String
+    Default: gks-cluster-provisioner-tf-locks-dev
+  BackupTableName:
+    Description: "Enter Dynamodb Table Name that you want to BackUp, Comma-delimited list"
+    Type: CommaDelimitedList
+    Default: "gks-backend-cognito-dev-eksTable, gks-backend-cognito-dev-gkeTable, gks-backend-cognito-dev-groupInfo, gks-backend-cognito-dev-systemConfig, gks-cluster-provisioner-tf-locks-dev"
+  #SourceGihubRepoUrl:
+  #  Description: Enter Github Repo url that contains build script and build files
+  #  Type: String
+  #  Default: https://github.com/anandshivam44/build
+  TemplatePath:
+    Type: String
+    Description: Path to CloudFormation templates (relative to top level of S3Bucket parameter)
+    Default: /gks-pipeline-backup/
+  S3Bucket:
+    Type: String  
+  Environment:
+    Type: String
+    AllowedValues: 
+        - dev 
+        - test 
+        - prod  
+Resources:
+  ArtifactStoreBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled
+  Pipeline:
+    DependsOn:
+      - ArtifactStoreBucket
+      - CodeBuildProject
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        Fn::Join:
+          - ""
+          - - https://
+            - Ref: S3Bucket
+            - .s3.
+            - Ref: AWS::Region
+            - .amazonaws.com
+            - Ref: TemplatePath
+            - pipeline.yml
+      Parameters:
+        ArtifactBucket:
+          Ref: ArtifactStoreBucket        
+        Environment:
+          Ref: Environment 
+        CodeBuildConf: !GetAtt "CodeBuildProject.Outputs.BackupPipelineBuild"           
+      TimeoutInMinutes: "20"
+  CodeBuildProject:    
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        Fn::Join:
+          - ""
+          - - https://
+            - Ref: S3Bucket
+            - .s3.
+            - Ref: AWS::Region
+            - .amazonaws.com
+            - Ref: TemplatePath
+            - build.yml
+      Parameters: 
+        DestinationBucketName:
+          Ref: DestinationBucketName
+        SourceBucketName:
+          Ref: SourceBucketName            
+        DestinationAccountID:
+          Ref: DestinationAccountID 
+        TerraformStateTableName:
+          Ref: TerraformStateTableName
+        BackupTableName: !Join [",", !Ref BackupTableName]          
+        #SourceGihubRepoUrl:
+        #  Ref: SourceGihubRepoUrl   
+        Environment:
+          Ref: Environment     
+
+  TriggerBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /
+      Policies:
+        - PolicyName: lambda-copier
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - codebuild:StartBuild
+                Resource: '*'                  
+  LambdaTriggerStartsBuild:
+    Type: AWS::Lambda::Function
+    DependsOn:
+      - CodeBuildProject
+    Properties:
+      Description: Start starts build for a code build project
+      Handler: index.handler
+      Runtime: python3.7
+      Role: !GetAtt "TriggerBuildRole.Arn"
+      Timeout: 20
+      MemorySize: 128
+      Code:
+        S3Bucket: !Ref LambdaCodeBucketName
+        S3Key: !Ref LambdaZipFileName
+      Environment:
+        Variables:
+          PROJECT_NAME: !GetAtt "CodeBuildProject.Outputs.BackupPipelineBuild"
+          BACKUP_PIPELINE_NAME: !Sub ${AWS::StackName}-${Environment}-Pipeline
+  ScheduledRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: "ScheduledRule"
+      ScheduleExpression: "rate(10 minutes)"
+      State: "ENABLED"      
+      Targets:
+        - Arn: !GetAtt LambdaTriggerStartsBuild.Arn
+          Id: "LambdaTriggerStartsBuild"
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref LambdaTriggerStartsBuild
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn:
+        Fn::GetAtt:
+          - "ScheduledRule"
+          - "Arn"
+

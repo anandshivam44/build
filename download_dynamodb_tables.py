@@ -8,7 +8,7 @@ tables = []
 # print("Table Name", os.environ["BACKUP_TABLE_NAME"])
 # print(type(os.environ["BACKUP_TABLE_NAME"]))
 
-for i in range(10):  # BACKUP_TABLE_NAME_1
+for i in range(5):  # BACKUP_TABLE_NAME_1
     TABLE_NAME = "BACKUP_TABLE_NAME_" + str(i)
     if os.environ[TABLE_NAME] != "NULL":
         print("Backing up TABLE_NAME=", os.environ[TABLE_NAME])
