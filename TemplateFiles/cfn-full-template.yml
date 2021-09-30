@@ -7,12 +7,12 @@ Parameters:
   DestinationBucketName:
     Description: Enter Destination bucket name which stores backup
     Type: String
-  LambdaCodeBucketName:
-    Description: Enter Bucket name which contains python as zip file
-    Type: String
-  LambdaZipFileName:
-    Description: Enter Zip file name which contains lambda function inside bucket 'LambdaCodeBucketName'
-    Type: String
+  # LambdaCodeBucketName:
+  #   Description: Enter Bucket name which contains python as zip file
+  #   Type: String
+  # LambdaZipFileName:
+  #   Description: Enter Zip file name which contains lambda function inside bucket 'LambdaCodeBucketName'
+  #   Type: String
   DestinationAccountID:
     Description: Enter Account ID from which dynamodb has to backup
     Type: String  
@@ -24,10 +24,6 @@ Parameters:
     Description: "Enter Dynamodb Table Name that you want to BackUp, Comma-delimited list"
     Type: CommaDelimitedList
     Default: "gks-backend-cognito-dev-eksTable, gks-backend-cognito-dev-gkeTable, gks-backend-cognito-dev-groupInfo, gks-backend-cognito-dev-systemConfig, gks-cluster-provisioner-tf-locks-dev"
-  #SourceGihubRepoUrl:
-  #  Description: Enter Github Repo url that contains build script and build files
-  #  Type: String
-  #  Default: https://github.com/anandshivam44/build
   TemplatePath:
     Type: String
     Description: Path to CloudFormation templates (relative to top level of S3Bucket parameter)
@@ -117,12 +113,12 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - codebuild:StartBuild
+                  - codepipeline:StartPipelineExecution
                 Resource: '*'                  
-  LambdaTriggerStartsBuild:
+  LambdaTriggerStartsPipeline:
     Type: AWS::Lambda::Function
     DependsOn:
-      - CodeBuildProject
+      - Pipeline
     Properties:
       Description: Start starts build for a code build project
       Handler: index.handler
@@ -131,25 +127,32 @@ Resources:
       Timeout: 20
       MemorySize: 128
       Code:
-        S3Bucket: !Ref LambdaCodeBucketName
-        S3Key: !Ref LambdaZipFileName
+        # S3Bucket: !Ref LambdaCodeBucketName
+        # S3Key: !Ref LambdaZipFileName
+        ZipFile: !Sub |
+          import boto3
+          import os
+
+          def handler(event, context):
+              client = boto3.client("codepipeline")
+              response = client.start_pipeline_execution(name=os.getenv("BACKUP_PIPELINE_NAME"))
+              print(f"CodePipeline Response : {response}")
       Environment:
         Variables:
-          PROJECT_NAME: !GetAtt "CodeBuildProject.Outputs.BackupPipelineBuild"
-          BACKUP_PIPELINE_NAME: !Sub ${AWS::StackName}-${Environment}-Pipeline
+          BACKUP_PIPELINE_NAME: !GetAtt "Pipeline.Outputs.PipelineName"
   ScheduledRule:
     Type: AWS::Events::Rule
     Properties:
       Description: "ScheduledRule"
-      ScheduleExpression: "rate(10 minutes)"
+      ScheduleExpression: "cron(0 2 * * ? *)"
       State: "ENABLED"      
       Targets:
-        - Arn: !GetAtt LambdaTriggerStartsBuild.Arn
-          Id: "LambdaTriggerStartsBuild"
+        - Arn: !GetAtt LambdaTriggerStartsPipeline.Arn
+          Id: "LambdaTriggerStartsPipeline"
   PermissionForEventsToInvokeLambda:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref LambdaTriggerStartsBuild
+      FunctionName: !Ref LambdaTriggerStartsPipeline
       Action: "lambda:InvokeFunction"
       Principal: "events.amazonaws.com"
       SourceArn:
@@ -157,3 +160,15 @@ Resources:
           - "ScheduledRule"
           - "Arn"
 
+Outputs:
+  PipelineURL:
+    Description: CodePipeline URL
+    Value: !GetAtt "Pipeline.Outputs.PipelineURL"
+  PipelineName:
+    Value: !GetAtt "Pipeline.Outputs.PipelineName"
+  BackupPipelineBuild:
+    Description: BackupPipelineBuild
+    Value: !GetAtt "CodeBuildProject.Outputs.BackupPipelineBuild"
+  BackupPipelineBuildURL:
+    Description: BackupPipelineBuild URL
+    Value: !GetAtt "CodeBuildProject.Outputs.BackupPipelineBuildURL"

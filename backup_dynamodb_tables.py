@@ -3,6 +3,8 @@ import json
 import os
 from decimal import Decimal
 
+REGION = os.getenv("REGION")
+dynamodb = boto3.resource("dynamodb", region_name=REGION)
 tables = []
 
 # print("Table Name", os.environ["BACKUP_TABLE_NAME"])
@@ -13,21 +15,15 @@ for i in range(5):  # BACKUP_TABLE_NAME_1
     if os.environ[TABLE_NAME] != "NULL":
         print("Backing up TABLE_NAME=", os.environ[TABLE_NAME])
         tables.append(os.environ[TABLE_NAME])
-# tables.append("Movies")
-
-REGION = os.getenv("REGION", "us-east-1")
-
 
 def default(obj):
     if isinstance(obj, Decimal):
         return str(obj)
     raise TypeError("Object of type '%s' is not JSON serializable" % type(obj).__name__)
 
-
 for table in tables:
     file_name = "./BackupFolder/" + table + ".json"
     file = open(file_name, "w+")
-    dynamodb = boto3.resource("dynamodb", region_name=REGION)
     table = dynamodb.Table(table)
     response = table.scan()  # Backup Dynamodb Table Contents
     json_object = json.dumps(response["Items"], indent=4, default=default)
