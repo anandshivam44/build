@@ -29,7 +29,8 @@ Parameters:
     Description: Path to CloudFormation templates (relative to top level of S3Bucket parameter)
     Default: /gks-pipeline-backup/
   S3Bucket:
-    Type: String  
+    Type: String
+    Default: gks-cluster-provisioner-infra-assets
   Environment:
     Type: String
     AllowedValues: 
@@ -88,8 +89,6 @@ Resources:
         TerraformStateTableName:
           Ref: TerraformStateTableName
         BackupTableName: !Join [",", !Ref BackupTableName]          
-        #SourceGihubRepoUrl:
-        #  Ref: SourceGihubRepoUrl   
         Environment:
           Ref: Environment     
 

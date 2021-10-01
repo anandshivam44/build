@@ -36,7 +36,7 @@ Resources:
                 Repo: "build"
                 Branch: "master"
                 PollForSourceChanges: false
-                OAuthToken: "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"
+                OAuthToken: "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"
               OutputArtifacts:
               - Name: SourceCodeApp
               RunOrder: 1
