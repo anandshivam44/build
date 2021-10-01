@@ -36,7 +36,11 @@ Parameters:
     AllowedValues: 
         - dev 
         - test 
-        - prod  
+        - prod 
+  GitHubAuthToken:
+    Type: String
+    Description: GitHub token id
+  
 Resources:
   ArtifactStoreBucket:
     Type: AWS::S3::Bucket
@@ -64,7 +68,8 @@ Resources:
           Ref: ArtifactStoreBucket        
         Environment:
           Ref: Environment 
-        CodeBuildConf: !GetAtt "CodeBuildProject.Outputs.BackupPipelineBuild"           
+        CodeBuildConf: !GetAtt "CodeBuildProject.Outputs.BackupPipelineBuild" 
+        GitHubAuthToken: !Ref GitHubAuthToken
       TimeoutInMinutes: "20"
   CodeBuildProject:    
     Type: AWS::CloudFormation::Stack

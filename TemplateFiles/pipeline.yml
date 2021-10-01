@@ -10,6 +10,8 @@ Parameters:
   CodeBuildConf:
     Description: CodeBuild Configuration
     Type: String
+  GitHubAuthToken:
+    Type: String
     
 Resources:        
   Pipeline:
@@ -36,7 +38,7 @@ Resources:
                 Repo: "build"
                 Branch: "master"
                 PollForSourceChanges: false
-                OAuthToken: "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"
+                OAuthToken: !Ref GitHubAuthToken
               OutputArtifacts:
               - Name: SourceCodeApp
               RunOrder: 1
