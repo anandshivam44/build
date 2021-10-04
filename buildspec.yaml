@@ -3,12 +3,13 @@ phases:
   build:
     commands:
       - python3 read_state.py
+      - mkdir ./BackupFolder
       - ls
       - echo "Start DynamoDB Backup"
       - python3 backup_dynamodb_tables.py
       - echo "DynamoDB Backup Completed"
       - # get current epoch time [6 digits]
-      - TIME_NOW=$(date +'%Y-%m-%d')
+      - TIME_NOW=$(date +'%Y-%m-%d-%H-%M-%S')
       - echo $TIME_NOW
       - # get all files from Source Bucket
       - echo "Start Copy terraform.state file from s3"
