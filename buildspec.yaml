@@ -3,6 +3,7 @@ phases:
   build:
     commands:
       - python3 read_state.py
+      - ls
       - echo "Start DynamoDB Backup"
       - python3 backup_dynamodb_tables.py
       - echo "DynamoDB Backup Completed"

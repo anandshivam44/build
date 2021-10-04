@@ -22,8 +22,11 @@ def default(obj):
     raise TypeError("Object of type '%s' is not JSON serializable" % type(obj).__name__)
 
 for table in tables:
-    file_name = "./BackupFolder/" + table + ".json"
-    file = open(file_name, "w+")
+    full_path = '/BackupFolder'
+    file_name = table + ".json"
+    completePath = os. path. join(full_path, file_name)
+    print(completePath)
+    file = open(completePath, "w+")
     table = dynamodb.Table(table)
     response = table.scan()  # Backup Dynamodb Table Contents
     json_object = json.dumps(response["Items"], indent=4, default=default)
