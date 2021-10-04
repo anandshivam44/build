@@ -22,5 +22,6 @@ phases:
       - ls
       - pwd
       - echo "Upload zip file to s3 Bucket"
+      - printenv 
       - aws s3 cp  ../$TIME_NOW.zip s3://$TARGET_BUCKET_NAME/backup-assets-$Environment
       - echo "Upload zip file to s3 Completed"
