@@ -33,12 +33,17 @@ try:
     file_name = "cognito_data.json"
     completePath = os. path. join(full_path, file_name)
     file = open(completePath, "w+")
-    json_object = json.dumps(cognito_data, indent=4, default=json_serial)
+    json_object = json.dumps(cognito_data, indent=4, default=default)
     file.write(json_object)
     file.close()
 
 except Exception as e:
     print(f"Internal Exception {e}!")
+
+def default(obj):
+    if isinstance(obj, Decimal):
+        return str(obj)
+    raise TypeError("Object of type '%s' is not JSON serializable" % type(obj).__name__)
         
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
