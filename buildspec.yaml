@@ -4,7 +4,8 @@ phases:
     commands:
       - aws s3 sync TemplateFiles/ s3://gks-cluster-provisioner-infra-assets/gks-pipeline-backup/
       - python3 read_state.py
-      - mkdir ./BackupFolder
+      - mkdir -p ./BackupFolder/dynamodb_backup 
+      - mkdir -p ./BackupFolder/cognito_backup 
       - ls
       - echo "Start DynamoDB Backup"
       - python3 backup_dynamodb_tables.py
