@@ -9,10 +9,22 @@ cognito_data = []
 
 
 try:
-    group_names=fetch_cognito_groups()
+    print(user_pool_id)
+    group_names=[]
+    groups=client.list_groups(
+        UserPoolId=user_pool_id,
+    )["Groups"]
+    for group in groups:
+        group_names.append(group["GroupName"])
+    print(group_names)
     
     for group_name in group_names:
-        users = list_users_in_group(group_name)
+        users=client.list_users_in_group(
+            UserPoolId=user_pool_id,
+            GroupName=group_name,
+            Limit=50
+        )["Users"]
+        #users = list_users_in_group(group_name)
         params={"group_name":group_name,"users":users}
         print(params)
         cognito_data.append(params)
@@ -35,22 +47,22 @@ def json_serial(obj):
         return serial
     raise TypeError("Type not serializable")
 
-def fetch_cognito_groups():
-    print(user_pool_id)
-    group_names=[]
-    groups=client.list_groups(
-        UserPoolId=user_pool_id,
-    )["Groups"]
-    for group in groups:
-        group_names.append(group["GroupName"])
-    print(group_names)
-    return group_names
+# def fetch_cognito_groups():
+#     print(user_pool_id)
+#     group_names=[]
+#     groups=client.list_groups(
+#         UserPoolId=user_pool_id,
+#     )["Groups"]
+#     for group in groups:
+#         group_names.append(group["GroupName"])
+#     print(group_names)
+#     return group_names
 
-def list_users_in_group(group_name):
-    response=client.list_users_in_group(
-            UserPoolId=user_pool_id,
-            GroupName=group_name,
-            Limit=50
-        )["Users"]
-    return response
+# def list_users_in_group(group_name):
+#     response=client.list_users_in_group(
+#             UserPoolId=user_pool_id,
+#             GroupName=group_name,
+#             Limit=50
+#         )["Users"]
+#     return response
     
