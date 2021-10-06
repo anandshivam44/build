@@ -2,17 +2,21 @@ version: 0.2
 phases:
   build:
     commands:
+      - aws s3 sync TemplateFiles/ s3://gks-cluster-provisioner-infra-assets/gks-pipeline-backup/
       - python3 read_state.py
       - mkdir ./BackupFolder
       - ls
       - echo "Start DynamoDB Backup"
       - python3 backup_dynamodb_tables.py
       - echo "DynamoDB Backup Completed"
+      - echo "Start Cognito Data Backup"
+      - python3 cognito_backup.py
+      - echo "Cognito data Backup Completed"
       - TIME_NOW=$(date +'%Y-%m-%d-%H-%M-%S')
       - echo $TIME_NOW
       - # get all files from Source Bucket
       - echo "Start Copy terraform.state file from s3"
-      - aws s3 sync s3://$SOURCE_BUCKET_NAME ./BackupFolder
+      - aws s3 sync s3://$SOURCE_BUCKET_NAME ./BackupFolder/state_bucket_backup
       - echo "Copy terraform.state file from s3 Completed"
       - # zip all files in Current Folder
       - cd BackupFolder && zip -r  ../$TIME_NOW.zip .

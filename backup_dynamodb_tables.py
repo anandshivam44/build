@@ -22,7 +22,7 @@ def default(obj):
     raise TypeError("Object of type '%s' is not JSON serializable" % type(obj).__name__)
 
 for table in tables:
-    full_path = './BackupFolder'
+    full_path = './BackupFolder/dynamodb_backup/'
     file_name = table + ".json"
     completePath = os. path. join(full_path, file_name)
     print(completePath)

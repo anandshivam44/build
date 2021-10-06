@@ -24,6 +24,9 @@ Parameters:
     Description: "Enter Dynamodb Table Name that you want to BackUp, Comma-delimited list"
     Type: CommaDelimitedList
     Default: "gks-backend-cognito-dev-eksTable, gks-backend-cognito-dev-gkeTable, gks-backend-cognito-dev-groupInfo, gks-backend-cognito-dev-systemConfig, gks-cluster-provisioner-tf-locks-dev"
+  CognitoUserPoolId:
+    Description: Enter Cognito user pool id which you want to perform the bachup operation.
+    Type: String
   TemplatePath:
     Type: String
     Description: Path to CloudFormation templates (relative to top level of S3Bucket parameter)
@@ -95,7 +98,9 @@ Resources:
           Ref: TerraformStateTableName
         BackupTableName: !Join [",", !Ref BackupTableName]          
         Environment:
-          Ref: Environment     
+          Ref: Environment  
+        CognitoUserPoolId:
+          Ref: CognitoUserPoolId
 
   TriggerBuildRole:
     Type: AWS::IAM::Role

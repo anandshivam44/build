@@ -12,7 +12,9 @@ Parameters:
   BackupTableName:    
     Type: CommaDelimitedList    
   Environment:
-    Type: String      
+    Type: String   
+  CognitoUserPoolId:
+    Type: String   
 
 Resources:
   BackupPipelineBuild:
@@ -33,6 +35,8 @@ Resources:
         EnvironmentVariables:    
           - Name: Environment
             Value: !Ref Environment
+          - Name: USER_POOL_ID
+            Value: !Ref CognitoUserPoolId
           - Name: SOURCE_BUCKET_NAME
             Value: !Ref SourceBucketName
           - Name: TARGET_BUCKET_NAME
