@@ -18,7 +18,7 @@ try:
         cognito_data.append(params)
     
     full_path = './BackupFolder/cognito_backup/'    
-    file_name = "cognito_backup.json"
+    file_name = "cognito_data.json"
     completePath = os. path. join(full_path, file_name)
     file = open(completePath, "w+")
     json_object = json.dumps(cognito_data, indent=4, default=json_serial)
@@ -36,6 +36,7 @@ def json_serial(obj):
     raise TypeError("Type not serializable")
 
 def fetch_cognito_groups():
+    print(user_pool_id)
     group_names=[]
     groups=client.list_groups(
         UserPoolId=user_pool_id,
