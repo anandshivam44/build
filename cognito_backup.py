@@ -2,6 +2,7 @@ import json
 import boto3
 import os
 from datetime import datetime
+from decimal import Decimal
 
 client = boto3.client('cognito-idp')
 user_pool_id=os.environ["USER_POOL_ID"]
